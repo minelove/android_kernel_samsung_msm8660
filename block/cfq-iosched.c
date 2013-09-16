@@ -2919,7 +2919,6 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
 static void cfq_ioc_set_ioprio(struct io_context *ioc)
 {
 	call_for_each_cic(ioc, changed_ioprio);
-	ioc->ioprio_changed = 0;
 }
 
 static void cfq_init_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
@@ -3211,8 +3210,13 @@ retry:
 		goto err_free;
 
 out:
-	smp_read_barrier_depends();
-	if (unlikely(ioc->ioprio_changed))
+	/*
+	 * test_and_clear_bit() implies a memory barrier, paired with
+	 * the wmb() in fs/ioprio.c, so the value seen for ioprio is the
+	 * new one.
+	 */
+	if (unlikely(test_and_clear_bit(IOC_CFQ_IOPRIO_CHANGED,
+					ioc->ioprio_changed)))
 		cfq_ioc_set_ioprio(ioc);
 
 #ifdef CONFIG_CFQ_GROUP_IOSCHED
@@ -3651,11 +3655,6 @@ static inline int __cfq_may_queue(struct cfq_queue *cfqq)
 {
 	if (cfq_cfqq_wait_request(cfqq) && !cfq_cfqq_must_alloc_slice(cfqq)) {
 		cfq_mark_cfqq_must_alloc_slice(cfqq);
-		return ELV_MQUEUE_MUST;
-	}
-
-	// Add I/O improvement code from U1
-	if (cfq_class_rt(cfqq)) {
 		return ELV_MQUEUE_MUST;
 	}
 
