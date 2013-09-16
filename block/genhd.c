@@ -623,77 +623,10 @@ void add_disk(struct gendisk *disk)
 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
 				   "bdi");
 	WARN_ON(retval);
-	
-		/*
-	 * Limit default readahead size for small devices.
-	 *        disk size    readahead size
-	 *               1M                8k
-	 *               4M               16k
-	 *              16M               32k
-	 *              64M               64k
-	 *             256M              128k
-	 *               1G              256k
-	 *               4G              512k
-	 *              16G             1024k
-	 *              64G             2048k
-	 *             256G             4096k
-	 */
-
-	if (get_capacity(disk)) {
-		unsigned long size = get_capacity(disk) >> 9;
-		size = 1UL << (ilog2(size) / 2);
-		bdi->ra_pages = min(bdi->ra_pages, size);
-	}
 
 	disk_add_events(disk);
 }
 EXPORT_SYMBOL(add_disk);
-
-/*
- * Duplicate from block/genhd.c del_gendisk(), but disable
- * fsync_bdev().
- */
-void del_gendisk_async(struct gendisk *disk)
-{
-	struct disk_part_iter piter;
-	struct hd_struct *part;
-
-	disk_del_events(disk);
-
-	/* invalidate stuff */
-	disk_part_iter_init(&piter, disk,
-			     DISK_PITER_INCL_EMPTY | DISK_PITER_REVERSE);
-	while ((part = disk_part_iter_next(&piter))) {
-		struct block_device *bdev = bdget_disk(disk, part->partno);
-		if (bdev) {
-			__invalidate_device(bdev, true);
-			bdput(bdev);
-		}
-		delete_partition(disk, part->partno);
-	}
-	disk_part_iter_exit(&piter);
-
-	invalidate_partition(disk, 0);
-	blk_free_devt(disk_to_dev(disk)->devt);
-	set_capacity(disk, 0);
-	disk->flags &= ~GENHD_FL_UP;
-
-	sysfs_remove_link(&disk_to_dev(disk)->kobj, "bdi");
-	bdi_unregister(&disk->queue->backing_dev_info);
-	blk_unregister_queue(disk);
-	blk_unregister_region(disk_devt(disk), disk->minors);
-
-	part_stat_set_all(&disk->part0, 0);
-	disk->part0.stamp = 0;
-
-	kobject_put(disk->part0.holder_dir);
-	kobject_put(disk->slave_dir);
-	disk->driverfs_dev = NULL;
-	if (!sysfs_deprecated)
-		sysfs_remove_link(block_depr, dev_name(disk_to_dev(disk)));
-	device_del(disk_to_dev(disk));
-}
-EXPORT_SYMBOL(del_gendisk_async);
 
 void del_gendisk(struct gendisk *disk)
 {
@@ -1198,6 +1131,13 @@ static int disk_uevent(struct device *dev, struct kobj_uevent_env *env)
 		cnt++;
 	disk_part_iter_exit(&piter);
 	add_uevent_var(env, "NPARTS=%u", cnt);
+#ifdef CONFIG_USB_HOST_NOTIFY
+	if (disk->interfaces == GENHD_IF_USB) {
+		add_uevent_var(env, "MEDIAPRST=%d", disk->media_present);
+		printk(KERN_INFO "%s %d, disk->media_present=%d, cnt=%d\n",
+				__func__, __LINE__, disk->media_present, cnt);
+	}
+#endif
 	return 0;
 }
 
@@ -1675,12 +1615,15 @@ static void disk_events_workfn(struct work_struct *work)
 	struct gendisk *disk = ev->disk;
 	char *envp[ARRAY_SIZE(disk_uevents) + 1] = { };
 	unsigned int clearing = ev->clearing;
-	unsigned int events;
+	unsigned int events = 0;
 	unsigned long intv;
 	int nr_events = 0, i;
 
-	/* check events */
-	events = disk->fops->check_events(disk, clearing);
+#ifdef CONFIG_USB_HOST_NOTIFY
+	if (disk->interfaces != GENHD_IF_USB)
+		/* check events */
+		events = disk->fops->check_events(disk, clearing);
+#endif
 
 	/* accumulate pending events and schedule next poll if necessary */
 	spin_lock_irq(&ev->lock);
@@ -1703,9 +1646,12 @@ static void disk_events_workfn(struct work_struct *work)
 	for (i = 0; i < ARRAY_SIZE(disk_uevents); i++)
 		if (events & disk->events & (1 << i))
 			envp[nr_events++] = disk_uevents[i];
-
-	if (nr_events)
-		kobject_uevent_env(&disk_to_dev(disk)->kobj, KOBJ_CHANGE, envp);
+#ifdef CONFIG_USB_HOST_NOTIFY
+		if (disk->interfaces != GENHD_IF_USB) {
+			if (nr_events)
+				kobject_uevent_env(&disk_to_dev(disk)->kobj, KOBJ_CHANGE, envp);
+		}
+#endif
 }
 
 /*

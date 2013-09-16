@@ -30,13 +30,13 @@
 #include <asm/div64.h>
 
 enum vr_data_dir {
-ASYNC,
-SYNC,
+	ASYNC,
+	SYNC,
 };
 
 enum vr_head_dir {
-FORWARD,
-BACKWARD,
+	FORWARD,
+	BACKWARD,
 };
 
 static const int sync_expire = HZ / 2; /* max time before a sync is submitted. */
@@ -45,52 +45,45 @@ static const int fifo_batch = 1;
 static const int rev_penalty = 0; /* penalty for reversing head direction */
 
 struct vr_data {
-struct rb_root sort_list;
-struct list_head fifo_list[2];
+	struct rb_root sort_list;
+	struct list_head fifo_list[2];
 
-struct request *next_rq;
-struct request *prev_rq;
+	struct request *next_rq;
+	struct request *prev_rq;
 
-unsigned int nbatched;
-sector_t last_sector; /* head position */
-int head_dir;
+	unsigned int nbatched;
+	sector_t last_sector; /* head position */
+	int head_dir;
 
-/* tunables */
-int fifo_expire[2];
-int fifo_batch;
-int rev_penalty;
+	/* tunables */
+	int fifo_expire[2];
+	int fifo_batch;
+	int rev_penalty;
 };
 
 static void vr_move_request(struct vr_data *, struct request *);
 
 static inline struct vr_data *
-vr_get_data(struct request_queue *q)
+	vr_get_data(struct request_queue *q)
 {
-return q->elevator->elevator_data;
+	return q->elevator->elevator_data;
 }
 
 static void
 vr_add_rq_rb(struct vr_data *vd, struct request *rq)
 {
-struct request *alias = elv_rb_add(&vd->sort_list, rq);
+	elv_rb_add(&vd->sort_list, rq);
+	if (blk_rq_pos(rq) >= vd->last_sector) {
+		if (!vd->next_rq || blk_rq_pos(vd->next_rq) > blk_rq_pos(rq))
+			vd->next_rq = rq;
+	}
+	else {
+		if (!vd->prev_rq || blk_rq_pos(vd->prev_rq) < blk_rq_pos(rq))
+			vd->prev_rq = rq;
+	}
 
-if (unlikely(alias)) {
-vr_move_request(vd, alias);
-alias = elv_rb_add(&vd->sort_list, rq);
-BUG_ON(alias);
-}
-
-if (blk_rq_pos(rq) >= vd->last_sector) {
-if (!vd->next_rq || blk_rq_pos(vd->next_rq) > blk_rq_pos(rq))
-vd->next_rq = rq;
-}
-else {
-if (!vd->prev_rq || blk_rq_pos(vd->prev_rq) < blk_rq_pos(rq))
-vd->prev_rq = rq;
-}
-
-BUG_ON(vd->next_rq && vd->next_rq == vd->prev_rq);
-BUG_ON(vd->next_rq && vd->prev_rq && blk_rq_pos(vd->next_rq) < blk_rq_pos(vd->prev_rq));
+	BUG_ON(vd->next_rq && vd->next_rq == vd->prev_rq);
+	BUG_ON(vd->next_rq && vd->prev_rq && blk_rq_pos(vd->next_rq) < blk_rq_pos(vd->prev_rq));
 }
 
 static void
