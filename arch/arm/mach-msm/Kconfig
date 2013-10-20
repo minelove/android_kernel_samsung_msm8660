@@ -1359,9 +1359,26 @@ config MSM_DALRPC_TEST
 	help
 	  Exercises DAL RPC calls to QDSP6.
 
+config CPU_OVERCLOCK
+	bool "Enable CPU Overclocking option"
+	default n
+
+config GPU_OVERCLOCK
+	bool "Enable GPU Overclocking option"
+	default n
+
 config CPU_VOLTAGE_TABLE
 	bool "Enable CPU Voltage Table via sysfs for adjustements"
 	default n
+
+config MSM_MPDEC
+	bool "Enable kernel based mpdecision"
+	depends on MSM_SMP
+	default n
+	help
+	  This enables kernel based multi core control.
+	  (up/down hotplug based on load)
+
 if CPU_FREQ_MSM
 
 config MSM_CPU_FREQ_SET_MIN_MAX
@@ -1791,6 +1808,9 @@ choice
 
 		config JPN_MODEL_SC_01D
 			bool "JPN NTT SC-01D"
+
+		config JPN_MODEL_SC_03D
+			bool "JPN NTT SC-03D"
 
 		config JPN_MODEL_SC_05D
 			bool "JPN NTT SC-05D"

@@ -1,5 +1,5 @@
 /*
- * BFQ-v6r2 for 3.0: data structures and common functions prototypes.
+ * BFQ-v5r1 for 3.0: data structures and common functions prototypes.
  *
  * Based on ideas and code from CFQ:
  * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
@@ -251,8 +251,6 @@ struct bfq_queue {
  * @rq_pos_tree: rbtree sorted by next_request position,
  *		used when determining if two or more queues
  *		have interleaving requests (see bfq_close_cooperator).
- * @eqm_lock:  spinlock used to protect all data structures pertaining
- *             the Early Queue Merge (EQM) mechanism.
  * @busy_queues: number of bfq_queues containing requests (including the
  *		 queue under service, even if it is idling).
  * @queued: number of queued requests.
@@ -319,7 +317,6 @@ struct bfq_data {
 	struct bfq_group *root_group;
 
 	struct rb_root rq_pos_tree;
-	spinlock_t eqm_lock;
 
 	int busy_queues;
 	int queued;
@@ -601,8 +598,6 @@ static void bfq_dispatch_insert(struct request_queue *q, struct request *rq);
 static struct bfq_queue *bfq_get_queue(struct bfq_data *bfqd,
 				       struct bfq_group *bfqg, int is_sync,
 				       struct io_context *ioc, gfp_t gfp_mask);
-static void bfq_end_raising_async_queues(struct bfq_data *bfqd,
-					 struct bfq_group *bfqg);
 static void bfq_put_async_queues(struct bfq_data *bfqd, struct bfq_group *bfqg);
 static void bfq_exit_bfqq(struct bfq_data *bfqd, struct bfq_queue *bfqq);
 #endif

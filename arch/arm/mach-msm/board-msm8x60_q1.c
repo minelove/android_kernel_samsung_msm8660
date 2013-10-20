@@ -3587,9 +3587,6 @@ static struct platform_device msm_gemini_device = {
 #endif
 
 #ifdef CONFIG_I2C_QUP
-static void gsbi_qup_i2c_gpio_config(int adap_id, int config_type)
-{
-}
 #if defined(CONFIG_JPN_MODEL_SC_05D)
 /*	QC patch for case 00580204 , I2C QTR failure
 * GSBI7 GPIO configuration for recovery of QTR I2C lines
@@ -3618,6 +3615,10 @@ static void gsbi7_qup_i2c_gpio_config(int adap_id, int config_type)
 		gpio_tlmm_config(gsbi7_i2c_table[0], GPIO_CFG_ENABLE);
 		gpio_tlmm_config(gsbi7_i2c_table[1], GPIO_CFG_ENABLE);
 	}
+}
+#else
+static void gsbi_qup_i2c_gpio_config(int adap_id, int config_type)
+{
 }
 #endif
 
