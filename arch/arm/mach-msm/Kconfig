@@ -1359,14 +1359,6 @@ config MSM_DALRPC_TEST
 	help
 	  Exercises DAL RPC calls to QDSP6.
 
-config CPU_OVERCLOCK
-	bool "Enable CPU Overclocking option"
-	default n
-
-config GPU_OVERCLOCK
-	bool "Enable GPU Overclocking option"
-	default n
-
 config CPU_VOLTAGE_TABLE
 	bool "Enable CPU Voltage Table via sysfs for adjustements"
 	default n
