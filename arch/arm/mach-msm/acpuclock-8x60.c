@@ -200,6 +200,7 @@ static struct clkctl_l2_speed l2_freq_tbl_v2[] = {
 	[20] = {1458000,  1, 0x1B, 1212500, 1250000, 4},
 	[21] = {1512000,  1, 0x1C, 1212500, 1250000, 4},
 	[22] = {1566000,  1, 0x1D, 1225000, 1250000, 4},
+	[23] = {1620000,  1, 0x1E, 1250000, 1275000, 4},
 };
 
 #define L2(x) (&l2_freq_tbl_v2[(x)])
@@ -319,7 +320,8 @@ static struct clkctl_acpu_speed acpu_freq_tbl_fast[] = {
   { {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(22), 1175000, 0x03006000},
   { {1, 1}, 1674000,  ACPU_SCPLL, 0, 0, 1, 0x1F, L2(22), 1200000, 0x03006000},
   { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(22), 1225000, 0x03006000},
-  { {1, 1}, 1804800,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(22), 1250000, 0x03006000},
+  { {1, 1}, 1804800,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(23), 1250000, 0x03006000},
+  { {1, 1}, 1812000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(23), 1275000, 0x03006000},
   { {0, 0}, 0 },
 };
 
@@ -713,9 +715,6 @@ void acpuclk_set_vdd(unsigned int khz, int vdd_uv) {
 
 	int i;
 	unsigned int new_vdd_uv;
-//	int vdd_uv;
-
-//	vdd_uv = vdd_mv * 1000;
 
 	mutex_lock(&drv_state.lock);
 
@@ -937,7 +936,7 @@ static unsigned int __init select_freq_plan(void)
 		speed_bin = (pte_efuse >> 4) & 0xF;
 
 	/* match max OC allowable */
-	max_khz = 1804800;
+	max_khz = 1890000;
 
 	pvs = (pte_efuse >> 10) & 0x7;
 	if (pvs == 0x7)
