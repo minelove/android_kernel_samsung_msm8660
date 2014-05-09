@@ -77,8 +77,10 @@ static void
 deadline_add_rq_rb(struct deadline_data *dd, struct request *rq)
 {
 	struct rb_root *root = deadline_rb_root(dd, rq);
+	struct request *__alias;
 
-	elv_rb_add(root, rq);
+	while (unlikely(__alias = elv_rb_add(root, rq)))
+		deadline_move_request(dd, __alias);
 }
 
 static inline void
@@ -352,7 +354,7 @@ static void *deadline_init_queue(struct request_queue *q)
 	dd->fifo_expire[READ] = read_expire;
 	dd->fifo_expire[WRITE] = write_expire;
 	dd->writes_starved = writes_starved;
-	dd->front_merges = 0;
+	dd->front_merges = 1;
 	dd->fifo_batch = fifo_batch;
 	return dd;
 }
