@@ -826,11 +826,11 @@ void vidc_sm_get_aspect_ratio_info(struct ddl_buf_addr *shared_mem,
 	if (aspect_ratio_info->aspect_ratio == 0x0f) {
 		extended_par_info = DDL_MEM_READ_32(shared_mem,
 			VIDC_SM_EXTENDED_PAR_ADDR);
-		aspect_ratio_info->extended_par_width =
+		aspect_ratio_info->par_width =
 			VIDC_GETFIELD(extended_par_info,
 			VIDC_SM_EXTENDED_PAR_WIDTH_BMSK,
 			VIDC_SM_EXTENDED_PAR_WIDTH_SHFT);
-		aspect_ratio_info->extended_par_height =
+		aspect_ratio_info->par_height =
 			VIDC_GETFIELD(extended_par_info,
 			VIDC_SM_EXTENDED_PAR_HEIGHT_BMSK,
 			VIDC_SM_EXTENDED_PAR_HEIGHT_SHFT);

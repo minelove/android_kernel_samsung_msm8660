@@ -4274,6 +4274,7 @@ static void __init msm8x60_init_dsps(void)
 #else
 #define MSM_FB_PRIM_BUF_SIZE_MULTIPLIER (2)
 #endif 
+
 #if defined (CONFIG_FB_MSM_MIPI_S6E8AA0_HD720_PANEL)
 /* prim = 736 x 1280 x 4(bpp) x 2(pages) */ 
 #define MSM_FB_PRIM_BUF_SIZE \
@@ -4316,7 +4317,6 @@ static void __init msm8x60_init_dsps(void)
 /* Note: must be multiple of 4096 */
 #define MSM_FB_SIZE roundup(MSM_FB_PRIM_BUF_SIZE + MSM_FB_EXT_BUF_SIZE + \
 				MSM_FB_DSUB_PMEM_ADDER, 4096)
-
 #define MSM_PMEM_SF_SIZE 0x4000000 /* 64 Mbytes */
 #define MSM_HDMI_PRIM_PMEM_SF_SIZE 0x4000000 /* 64 Mbytes */
 
@@ -4345,19 +4345,19 @@ unsigned char hdmi_is_primary;
 #endif
 #ifndef CONFIG_SEC_KERNEL_REBASE_FOR_PMEM_OPTIMIZATION
 #if defined(CONFIG_JPN_MODEL_SC_05D)
-#define MSM_PMEM_ADSP_SIZE         0x2900000
+#define MSM_PMEM_ADSP_SIZE         0x1100000 /* 0x2900000  */
 # else
 #define MSM_PMEM_ADSP_SIZE         0x4200000
 #endif
 #else
 #define MSM_PMEM_ADSP_BASE         0x40400000
 #if defined(CONFIG_JPN_MODEL_SC_05D)
-#define MSM_PMEM_ADSP_SIZE         0x02900000
+#define MSM_PMEM_ADSP_SIZE         0x1100000 /* 0x2900000  */
 # else
 #define MSM_PMEM_ADSP_SIZE         0x02A00000 /* 42MB */
 #endif
 #endif
-#define MSM_PMEM_AUDIO_SIZE        0x4CF000
+#define MSM_PMEM_AUDIO_SIZE        0x300000 /* 0x4CF000 */
 
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 #if defined(CONFIG_JPN_MODEL_SC_05D)
@@ -4370,7 +4370,7 @@ unsigned char hdmi_is_primary;
 #endif
 
 #define MSM_SMI_BASE          0x38000000
-#define MSM_SMI_SIZE          0x4000000
+#define MSM_SMI_SIZE          0x3900000
 
 #define KERNEL_SMI_BASE       (MSM_SMI_BASE)
 #define KERNEL_SMI_SIZE       0x600000
