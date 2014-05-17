@@ -117,22 +117,8 @@
 #define IEEE80211_MAX_MESH_ID_LEN	32
 
 #define IEEE80211_QOS_CTL_LEN		2
-/* 1d tag mask */
+#define IEEE80211_QOS_CTL_TID_MASK	0x000F
 #define IEEE80211_QOS_CTL_TAG1D_MASK	0x0007
-/* TID mask */
-#define IEEE80211_QOS_CTL_TID_MASK		0x000f
-/* EOSP */
-#define IEEE80211_QOS_CTL_EOSP			0x0010
-/* ACK policy */
-#define IEEE80211_QOS_CTL_ACK_POLICY_NORMAL	0x0000
-#define IEEE80211_QOS_CTL_ACK_POLICY_NOACK	0x0020
-#define IEEE80211_QOS_CTL_ACK_POLICY_NO_EXPL	0x0040
-#define IEEE80211_QOS_CTL_ACK_POLICY_BLOCKACK	0x0060
-#define IEEE80211_QOS_CTL_ACK_POLICY_MASK	0x0060
-/* A-MSDU 802.11n */
-#define IEEE80211_QOS_CTL_A_MSDU_PRESENT	0x0080
-/* Mesh Control 802.11s */
-#define IEEE80211_QOS_CTL_MESH_CONTROL_PRESENT  0x0100
 
 /* U-APSD queue for WMM IEs sent by AP */
 #define IEEE80211_WMM_IE_AP_QOSINFO_UAPSD	(1<<7)
@@ -544,15 +530,6 @@ static inline int ieee80211_is_qos_nullfunc(__le16 fc)
 	       cpu_to_le16(IEEE80211_FTYPE_DATA | IEEE80211_STYPE_QOS_NULLFUNC);
 }
 
-/**
- * ieee80211_is_first_frag - check if IEEE80211_SCTL_FRAG is not set
- * @seq_ctrl: frame sequence control bytes in little-endian byteorder
- */
-static inline int ieee80211_is_first_frag(__le16 seq_ctrl)
-{
-	return (seq_ctrl & cpu_to_le16(IEEE80211_SCTL_FRAG)) == 0;
-}
-
 struct ieee80211s_hdr {
 	u8 flags;
 	u8 ttl;
@@ -643,10 +620,6 @@ struct ieee80211_rann_ie {
 	u32 rann_seq;
 	u32 rann_metric;
 } __attribute__ ((packed));
-
-enum ieee80211_rann_flags {
-	RANN_FLAG_IS_GATE = 1 << 0,
-};
 
 #define WLAN_SA_QUERY_TR_ID_LEN 2
 
