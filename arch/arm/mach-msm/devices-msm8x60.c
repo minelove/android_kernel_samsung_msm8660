@@ -703,30 +703,12 @@ static struct msm_bus_vectors grp2d1_init_vectors[] = {
 	},
 };
 
-static struct msm_bus_vectors grp2d1_low_vectors[] = {
-        {
-                .src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
-                .dst = MSM_BUS_SLAVE_EBI_CH0,
-                .ab = 0,
-                .ib = KGSL_CONVERT_TO_MBPS(1300),
-        },
-};
-
-static struct msm_bus_vectors grp2d1_nom_vectors[] = {
-        {
-                .src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
-                .dst = MSM_BUS_SLAVE_EBI_CH0,
-                .ab = 0,
-                .ib = KGSL_CONVERT_TO_MBPS(1638),
-        },
-};
-
 static struct msm_bus_vectors grp2d1_max_vectors[] = {
 	{
 		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(2048),
+		.ib = KGSL_CONVERT_TO_MBPS(990),
 	},
 };
 
@@ -735,14 +717,6 @@ static struct msm_bus_paths grp2d1_bus_scale_usecases[] = {
 		ARRAY_SIZE(grp2d1_init_vectors),
 		grp2d1_init_vectors,
 	},
-        {
-                ARRAY_SIZE(grp2d1_low_vectors),
-                grp2d1_low_vectors,
-        },
-        {
-                ARRAY_SIZE(grp2d1_nom_vectors),
-                grp2d1_nom_vectors,
-        },
 	{
 		ARRAY_SIZE(grp2d1_max_vectors),
 		grp2d1_max_vectors,
